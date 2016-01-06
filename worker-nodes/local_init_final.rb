@@ -58,6 +58,8 @@ begin
   #TODO get faraday & rubyzip working here
   `curl -o #{download_file} #{download_url}`
   `cd #{analysis_dir} && unzip -o #{download_file}`
+  #how to unzip with workflow
+  OpenStudio::Workflow.extract_archive("#{run_dir}/analysis.zip", run_dir)
 
   # Find any custom worker files -- should we just call these via system ruby? Then we could have any gem that is installed (not bundled)
   files = Dir["#{analysis_dir}/lib/worker_#{options[:state]}/*.rb"].map { |n| File.basename(n) }.sort
