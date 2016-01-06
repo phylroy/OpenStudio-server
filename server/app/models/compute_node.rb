@@ -18,6 +18,65 @@ class ComputeNode
   index({ ip_address: 1 }, unique: true)
   index(node_type: 1)
 
+  # Initialize workers will load the IP addresses into the database that can be used for the analysis
+  def self.initialize_workers(options = {})
+    # delete the master and workers and reload them everysingle time an analysis is initialized -- why NICK?
+    ComputeNode.delete_all
+
+    Rails.logger.info 'initializing workers'
+
+    # load in the master and worker information if it doesn't already exist
+    ip_file = '/home/ubuntu/ip_addresses'
+    unless File.exist?(ip_file)
+      ip_file = '/data/launch-instance/ip_addresses' # somehow check if this is a vagrant box -- RAILS ENV?
+    end
+
+    # Hack in for windows support
+    ips = []
+    if File.exist? ip_file
+      ips = File.read(ip_file).split("\n")
+    else
+      ips = ['master|127.0.0.1|os-server|1|vagrant|vagrant|true']
+    end
+
+    ips.each do |ip|
+      cols = ip.split('|')
+      if %w(master server).include? cols[0] # TODO: remove master eventually
+        node = ComputeNode.find_or_create_by(node_type: 'server', ip_address: cols[1])
+        node.hostname = cols[2]
+        node.cores = cols[3]
+        node.user = cols[4]
+        node.password = cols[5].chomp
+        if options[:use_server_as_worker] && cols[6].chomp == 'true'
+          node.valid = true
+        else
+          node.valid = false
+        end
+        node.save!
+
+        logger.info("Server node #{node.inspect}")
+      elsif cols[0] == 'worker'
+        node = ComputeNode.find_or_create_by(node_type: 'worker', ip_address: cols[1])
+        node.hostname = cols[2]
+        node.cores = cols[3]
+        node.user = cols[4]
+        node.password = cols[5].chomp
+        node.valid = false
+        if cols[6] && cols[6].chomp == 'true'
+          node.valid = true
+        end
+        node.save!
+
+        logger.info("Worker node #{node.inspect}")
+      end
+    end
+
+    # get server and worker characteristics
+    # 4/14/15 Disable for now because there is not easy way to get this data back to the server without having
+    # to ssh into the box from the server user (nobody). Probably move this over to the worker initialization script.
+    # ComputeNode.system_information
+  end
+
   # Return all the valid IP addresses as a hash in prep for writing to a dataframe
   def self.worker_ips
     worker_ips_hash = {}
