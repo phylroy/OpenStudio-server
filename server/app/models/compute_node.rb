@@ -9,6 +9,7 @@ class ComputeNode
   field :user, type: String
   field :password, type: String
   field :cores, type: Integer
+  field :root_path, type: String
   field :ami_id, type: String
   field :instance_id, type: String
   field :valid, type: Boolean, default: false

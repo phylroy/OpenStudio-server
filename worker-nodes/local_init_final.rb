@@ -27,6 +27,10 @@ optparse = OptionParser.new do |opts|
   opts.on('-s', '--state initialize_or_finalize ', String, 'Initializing or finalizing') do |state|
     options[:state] = state
   end
+
+  opts.on('-r' '--root_path path', String, 'Root path for analysis run') do |root_path|
+    options[:root_path] = root_path
+  end
 end
 optparse.parse!
 
@@ -41,13 +45,19 @@ unless options[:state]
   exit
 end
 
+if options[:root_path]
+  analysis_dir = options[:root_path]
+else
+  puts "Assuming analysis_dir to be '\mnt\openstudio'"
+  analysis_dir = '\mnt\openstudio'
+end
+
 # Set the result of the project for R to know that this finished
 result = false
 begin
   # Logger for the simulate datapoint
-  analysis_dir = "C:\\Projects\\PAT20\\analysis"
-  FileUtils.mkdir_p analysis_dir unless Dir.exist? analysis_dir
-  logger = Logger.new("#{analysis_dir}/worker_#{options[:state]}.log")
+  FileUtils.mkdir_p "#{analysis_dir}/analysis_#{options[:analysis_id]}" unless Dir.exist? "#{analysis_dir}/analysis_#{options[:analysis_id]}"
+  logger = Logger.new("#{analysis_dir}/analysis_#{options[:analysis_id]}/worker_#{options[:state]}.log")
 
   logger.info "Running #{__FILE__}"
 
@@ -56,10 +66,11 @@ begin
   download_url = "http://127.0.0.1:3000/analyses/#{options[:analysis_id]}/download_analysis_zip"
   logger.info "Downloading analysis.zip from #{download_url} to #{download_file}"
   #TODO get faraday & rubyzip working here
-  `curl -o #{download_file} #{download_url}`
-  `cd #{analysis_dir} && unzip -o #{download_file}`
+  unless File.exist? download_file
+    `curl -o #{download_file} #{download_url}`
+  end
   #how to unzip with workflow
-  OpenStudio::Workflow.extract_archive("#{run_dir}/analysis.zip", run_dir)
+  OpenStudio::Workflow.extract_archive("#{analysis_dir}/analysis.zip", analysis_dir)
 
   # Find any custom worker files -- should we just call these via system ruby? Then we could have any gem that is installed (not bundled)
   files = Dir["#{analysis_dir}/lib/worker_#{options[:state]}/*.rb"].map { |n| File.basename(n) }.sort

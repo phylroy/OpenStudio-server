@@ -30,6 +30,9 @@ class Analysis::BatchRun
 
     # get the master ip address
     master_ip = ComputeNode.where(node_type: 'server').first.ip_address
+    #TODO Hook up the ComputeNode root_path field to an initializer
+    #root_path = ComputeNode.where(node_type: 'server').first.root_path
+    root_path = "C:/Projects/PAT20/analysis"
     Rails.logger.info("Master ip: #{master_ip}")
     Rails.logger.info('Starting Local Runner')
 
@@ -52,13 +55,13 @@ class Analysis::BatchRun
       # Before kicking off the Analysis, make sure to setup the downloading of the files child process
       process = Analysis::Core::BackgroundTasks.start_child_processes
 
-      `cd ? && bundle exec ruby local_init_final.rb arg arg arg`
+      `cd #{root_path} && bundle exec ruby local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}`
 
       @options[:data_points].each do |dp|
-        #TODO Fix which ruby to openstudio ruby that is shipped
-        string_to_exec = "cd /mnt/openstudio && bundle exec ruby /mnt/openstudio/simulate_data_point.rb -a #{@analysis.id} -u #{dp} -x #{@options[:run_data_point_filename]}"
+        #TODO Fix which ruby to shipped openstudio ruby
+        string_to_exec = "cd #{root_path} && bundle exec ruby #{root_path}/local_simulate_data_point.rb -a #{@analysis.id} -u #{dp} -x #{@options[:run_data_point_filename]}"
         Rails.logger.info "Attempting to exec string: \n #{string_to}"
-        system string_to_exec
+        `#{string_to_exec}`
         Rails.logger.info "Ran datapoint #{dp}"
       end
 

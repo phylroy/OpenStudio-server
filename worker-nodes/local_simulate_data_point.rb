@@ -32,6 +32,10 @@ optparse = OptionParser.new do |opts|
   opts.on('-x', '--execute-file NAME', String, 'Type of the workflow the run will execute') do |s|
     options[:run_workflow_method] = s
   end
+
+  opts.on('-r' '--root_path path', String, 'Root path for analysis run') do |root_path|
+    options[:root_path] = root_path
+  end
 end
 optparse.parse!
 
@@ -44,6 +48,11 @@ unless options[:uuid]
   exit
 end
 
+unless options[:root_path]
+  puts "Assuming analysis_dir to be '\mnt\openstudio'"
+  options[:root_path] = '\mnt\openstudio'
+end
+
 # Set the result of the project for R to know that this finished
 result = nil
 
@@ -51,12 +60,10 @@ begin
   directory = nil
   fail 'Data Point is NA... skipping' if options[:uuid] == 'NA'
   #TODO Fix paths
-  analysis_dir = "/mnt/openstudio/analysis_#{options[:analysis_id]}"
-  store_directory = "/mnt/openstudio/analysis_#{options[:analysis_id]}/data_point_#{options[:uuid]}"
-  FileUtils.mkdir_p(store_directory)
+  analysis_dir = "#{options[:root_path]}/analysis_#{options[:analysis_id]}"
 
   # use /run/shm on AWS (if possible)
-  directory = store_directory
+  directory = analysis_dir
 
   # Logger for the simulate datapoint
   logger = Logger.new("#{directory}/#{options[:uuid]}.log")
@@ -74,7 +81,7 @@ begin
     datapoint_id: options[:uuid],
     analysis_root_path: analysis_dir,
     adapter_options: {
-      mongoid_path: '/mnt/openstudio/rails-models'
+      mongoid_path: "#{options[:root_path]}/rails-models"
     }
   }
   if options[:run_workflow_method] == 'custom_xml' ||
@@ -94,7 +101,7 @@ begin
       datapoint_id: options[:uuid],
       xml_library_file: "#{analysis_dir}/lib/openstudio_xml/main.rb",
       adapter_options: {
-        mongoid_path: '/mnt/openstudio/rails-models'
+          mongoid_path: "#{options[:root_path]}/rails-models"
       }
     }
   elsif options[:run_workflow_method] == 'pat_workflow' ||
@@ -104,7 +111,7 @@ begin
       datapoint_id: options[:uuid],
       analysis_root_path: analysis_dir,
       adapter_options: {
-        mongoid_path: '/mnt/openstudio/rails-models'
+          mongoid_path: "#{options[:root_path]}/rails-models"
       }
     }
   end
@@ -116,29 +123,6 @@ begin
   logger.info "Final run state is #{k.final_state}"
 
   # TODO: get the last results out --- result = result.split("\n").last if result
-
-  # copy the files that are needed over to the run directory
-  if options[:run_shm]
-    # only grab the zip/log files and put back in store_directory
-    zip_file = "#{directory}/data_point_#{options[:uuid]}.zip"
-    dest_zip_file = "#{store_directory}/data_point_#{options[:uuid]}.zip"
-    logger.info "Trying to move zip file from #{zip_file} to #{dest_zip_file}"
-    if File.exist?(zip_file)
-      FileUtils.rm_f(dest_zip_file) if File.exist?(dest_zip_file)
-      logger.info 'Moving zip file'
-      FileUtils.move(zip_file, dest_zip_file)
-    end
-
-    log_file = "#{directory}/#{options[:uuid]}.log"
-    dest_log_file = File.expand_path("#{store_directory}/../#{options[:uuid]}-run_os.log")
-    if File.exist?(log_file)
-      FileUtils.rm_f(dest_log_file) if File.exist?(dest_log_file)
-      FileUtils.move(log_file, dest_log_file)
-    end
-
-    logger.info "Removing directory from shm #{directory}"
-    FileUtils.rm_rf(directory) if Dir.exist?(directory)
-  end
 
   # check if the simulation failed after moving the files back to the right place
   if result == 'NA'
