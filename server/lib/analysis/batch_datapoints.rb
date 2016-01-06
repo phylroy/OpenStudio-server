@@ -29,19 +29,15 @@ class Analysis::BatchDatapoints
     # reload the object (which is required) because the sub-documents (jobs) may have changed
     @analysis.reload
 
-    # Create an instance for R
-    @r = Rserve::Simpler.new # IS THIS REQUIRED? IT SHOULDN'T BE FOR NON-FANCY ANALYSIS TYPES
     begin
       Rails.logger.info "Initializing analysis for #{@analysis.name} with UUID of #{@analysis.uuid}"
       Rails.logger.info "Setting up R for #{self.class.name}"
       # TODO: need to move this to the module class
-      @r.converse('setwd("/mnt/openstudio")')
 
       selected_variables = Variable.variables(@analysis.id)
       Rails.logger.info "Found #{selected_variables.count} non-default variables in the batch datapoint set."
 
       # generate the probabilities for all variables as column vectors
-      @r.converse("print('starting batch_datapoints')")
       samples = nil
 
       Rails.logger.info 'Starting batch datapoint extraction.'

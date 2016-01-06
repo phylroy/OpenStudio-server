@@ -63,60 +63,6 @@ class Analysis
     %w(na init queued started completed)
   end
 
-  # TODO: Move this into the compute node class and call this with delayed jobs if applicable
-  def initialize_workers(options = {})
-    # delete the master and workers and reload them everysingle time an analysis is initialized -- why NICK?
-    ComputeNode.delete_all
-
-    Rails.logger.info 'initializing workers'
-
-    # load in the master and worker information if it doesn't already exist
-    ip_file = '/home/ubuntu/ip_addresses'
-    unless File.exist?(ip_file)
-      ip_file = '/data/launch-instance/ip_addresses' # somehow check if this is a vagrant box -- RAILS ENV?
-    end
-
-    if File.exist? ip_file
-      ips = File.read(ip_file).split("\n")
-      ips.each do |ip|
-        cols = ip.split('|')
-        if cols[0] == 'master' # TODO: eventually rename this from master to server. The database calls this server
-          node = ComputeNode.find_or_create_by(node_type: 'server', ip_address: cols[1])
-          node.hostname = cols[2]
-          node.cores = cols[3]
-          node.user = cols[4]
-          node.password = cols[5].chomp
-          if options[:use_server_as_worker] && cols[6].chomp == 'true'
-            node.valid = true
-          else
-            node.valid = false
-          end
-          node.save!
-
-          logger.info("Server node #{node.inspect}")
-        elsif cols[0] == 'worker'
-          node = ComputeNode.find_or_create_by(node_type: 'worker', ip_address: cols[1])
-          node.hostname = cols[2]
-          node.cores = cols[3]
-          node.user = cols[4]
-          node.password = cols[5].chomp
-          node.valid = false
-          if cols[6] && cols[6].chomp == 'true'
-            node.valid = true
-          end
-          node.save!
-
-          logger.info("Worker node #{node.inspect}")
-        end
-      end
-    end
-
-    # get server and worker characteristics
-    # 4/14/15 Disable for now because there is not easy way to get this data back to the server without having
-    # to ssh into the box from the server user (nobody). Probably move this over to the worker initialization script.
-    # ComputeNode.system_information
-  end
-
   def start(no_delay, analysis_type = 'batch_run', options = {})
     defaults = { skip_init: false, use_server_as_worker: false }
     options = defaults.merge(options)
@@ -129,7 +75,7 @@ class Analysis
       self.save!
 
       Rails.logger.info('Initializing workers in database')
-      initialize_workers(options)
+      ClusterNode.initialize_workers(options)
     end
 
     Rails.logger.info("Starting #{analysis_type}")
