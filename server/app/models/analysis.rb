@@ -75,7 +75,7 @@ class Analysis
       self.save!
 
       Rails.logger.info('Initializing workers in database')
-      ClusterNode.initialize_workers(options)
+      ComputeNode.initialize_workers(options)
     end
 
     Rails.logger.info("Starting #{analysis_type}")
