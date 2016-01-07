@@ -53,7 +53,7 @@ class Analysis::LocalRunner
     begin
 
       # Before kicking off the Analysis, make sure to setup the downloading of the files child process
-      process = Analysis::Core::BackgroundTasks.start_child_processes
+      #process = Analysis::Core::BackgroundTasks.start_child_processes
 
       `cd #{root_path} && bundle exec ruby local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}`
 
@@ -72,17 +72,17 @@ class Analysis::LocalRunner
       @analysis.save!
     ensure
       # ensure that the cluster is stopped
-      cluster.stop if cluster
+      #cluster.stop if cluster
 
       # Kill the downloading of data files process
       Rails.logger.info('Ensure block of analysis cleaning up any remaining processes')
-      process.stop if process
+      #process.stop if process
     end
 
     Rails.logger.info 'Running finalize worker scripts'
-    unless cluster.finalize_workers(worker_ips, @analysis.id)
-      fail 'could not run finalize worker scripts'
-    end
+    # unless cluster.finalize_workers(worker_ips, @analysis.id)
+    #   fail 'could not run finalize worker scripts'
+    # end
     # Do one last check if there are any data points that were not downloaded
     begin
       # in large analyses it appears that this is timing out or just not running to completion.
