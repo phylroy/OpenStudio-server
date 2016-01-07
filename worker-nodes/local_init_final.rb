@@ -3,6 +3,7 @@
 # server/worker.
 
 require 'bundler'
+require 'openstudio-workflow'
 begin
   Bundler.setup
 rescue Bundler::BundlerError => e
@@ -66,7 +67,7 @@ begin
   download_url = "http://127.0.0.1:3000/analyses/#{options[:analysis_id]}/download_analysis_zip"
   logger.info "Downloading analysis.zip from #{download_url} to #{download_file}"
   #TODO get faraday & rubyzip working here
-  unless File.exist? download_file
+  unless !File.exist? download_file
     `curl -o #{download_file} #{download_url}`
   end
   #how to unzip with workflow
