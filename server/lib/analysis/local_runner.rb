@@ -1,4 +1,4 @@
-class Analysis::BatchRun
+class Analysis::LocalRunner
   include Analysis::Core
 
   def initialize(analysis_id, analysis_job_id, options = {})
