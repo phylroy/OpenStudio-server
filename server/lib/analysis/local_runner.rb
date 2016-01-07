@@ -33,6 +33,7 @@ class Analysis::LocalRunner
     #TODO Hook up the ComputeNode root_path field to an initializer
     #root_path = ComputeNode.where(node_type: 'server').first.root_path
     root_path = "C:/Projects/PAT20/analysis"
+    worker_nodes_path = "C:/Projects/PAT20/worker-nodes"
     Rails.logger.info("Master ip: #{master_ip}")
     Rails.logger.info('Starting Local Runner')
 
@@ -55,7 +56,7 @@ class Analysis::LocalRunner
       # Before kicking off the Analysis, make sure to setup the downloading of the files child process
       #process = Analysis::Core::BackgroundTasks.start_child_processes
 
-      `cd #{root_path} && bundle exec ruby local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}`
+      `cd #{root_path} && bundle exec ruby #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}`
 
       @options[:data_points].each do |dp|
         #TODO Fix which ruby to shipped openstudio ruby
