@@ -55,12 +55,13 @@ class Analysis::LocalRunner
 
       # Before kicking off the Analysis, make sure to setup the downloading of the files child process
       #process = Analysis::Core::BackgroundTasks.start_child_processes
-
+      #TODO make require 'openstudio' work
+      #`cd #{root_path} && bundle exec "C:\Program Files\OpenStudio 1.10.0\ruby-install\ruby\bin\ruby" #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}`
       `cd #{root_path} && bundle exec ruby #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}`
 
       @options[:data_points].each do |dp|
         #TODO Fix which ruby to shipped openstudio ruby
-        string_to_exec = "cd #{root_path} && bundle exec ruby #{root_path}/local_simulate_data_point.rb -a #{@analysis.id} -u #{dp} -x #{@options[:run_data_point_filename]}"
+        string_to_exec = "cd #{root_path} && bundle exec 'C:\Program Files\OpenStudio 1.10.0\ruby-install\ruby\bin\ruby' #{root_path}/local_simulate_data_point.rb -a #{@analysis.id} -u #{dp} -x #{@options[:run_data_point_filename]}"
         Rails.logger.info "Attempting to exec string: \n #{string_to}"
         `#{string_to_exec}`
         Rails.logger.info "Ran datapoint #{dp}"
