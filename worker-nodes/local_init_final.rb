@@ -3,6 +3,7 @@
 # server/worker.
 
 require 'bundler'
+require 'openstudio'
 require 'openstudio-workflow'
 begin
   Bundler.setup
