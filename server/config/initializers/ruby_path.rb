@@ -2,5 +2,6 @@
 
 #RUBY_BIN_DIR = '/opt/rbenv/shims'
 #RUBY_BIN_DIR = `C:\Program Files\OpenStudio 1.10.0\ruby-install\ruby\bin`
-RUBY_BIN_DIR = 'C:/Program Files/OpenStudio 1.10.0/ruby-install/ruby/bin'
+#RUBY_BIN_DIR = 'C:/Program Files/OpenStudio 1.10.0/ruby-install/ruby/bin'
+RUBY_BIN_DIR = 'C:/Ruby200-x64/bin'
 

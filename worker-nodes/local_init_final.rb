@@ -4,7 +4,7 @@
 
 require 'bundler'
 require 'openstudio'
-require 'openstudio-workflow'
+#require 'openstudio-workflow'
 begin
   Bundler.setup
 rescue Bundler::BundlerError => e
@@ -72,7 +72,7 @@ begin
     `curl -o #{download_file} #{download_url}`
   end
   #how to unzip with workflow
-  OpenStudio::Workflow.extract_archive("#{analysis_dir}/analysis.zip", analysis_dir)
+  #OpenStudio::Workflow.extract_archive("#{analysis_dir}/analysis.zip", analysis_dir)
 
   # Find any custom worker files -- should we just call these via system ruby? Then we could have any gem that is installed (not bundled)
   files = Dir["#{analysis_dir}/lib/worker_#{options[:state]}/*.rb"].map { |n| File.basename(n) }.sort
