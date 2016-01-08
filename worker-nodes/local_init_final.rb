@@ -16,6 +16,23 @@ end
 require 'optparse'
 require 'fileutils'
 require 'logger'
+require 'zip'
+
+  def unzip_archive(archive_filename, destination, overwrite = true)
+      Zip::File.open(archive_filename) do |zf|
+        zf.each do |f|
+          f_path = File.join(destination, f.name)
+          FileUtils.mkdir_p(File.dirname(f_path))
+
+          if File.exist?(f_path) && overwrite
+            FileUtils.rm_rf(f_path)
+            zf.extract(f, f_path)
+          elsif !File.exist? f_path
+            zf.extract(f, f_path)
+          end
+        end
+      end
+  end
 
 puts "Parsing Input: #{ARGV}"
 
@@ -71,8 +88,9 @@ begin
   unless !File.exist? download_file
     `curl -o #{download_file} #{download_url}`
   end
+  
   #how to unzip with workflow
-  #OpenStudio::Workflow.extract_archive("#{analysis_dir}/analysis.zip", analysis_dir)
+  unzip_archive("#{analysis_dir}/analysis.zip", analysis_dir)
 
   # Find any custom worker files -- should we just call these via system ruby? Then we could have any gem that is installed (not bundled)
   files = Dir["#{analysis_dir}/lib/worker_#{options[:state]}/*.rb"].map { |n| File.basename(n) }.sort
