@@ -4,7 +4,7 @@
 
 require 'bundler'
 require 'openstudio'
-#require 'openstudio-workflow'
+require 'openstudio-workflow'
 begin
   Bundler.setup
 rescue Bundler::BundlerError => e
