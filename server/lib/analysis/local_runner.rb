@@ -36,6 +36,7 @@ class Analysis::LocalRunner
     worker_nodes_path = "C:/Projects/PAT20/worker-nodes"
     Rails.logger.info("Master ip: #{master_ip}")
     Rails.logger.info('Starting Local Runner')
+    Rails.logger.info("options: #{@options}")
 
     # Quick preflight check that R, MongoDB, and Rails are working as expected. Checks to make sure
     # that the run flag is true.
@@ -61,6 +62,10 @@ class Analysis::LocalRunner
       Rails.logger.info "RUBY_BIN_DIR:#{RUBY_BIN_DIR}"
       os_RB_DIR = 'C:/Program Files/OpenStudio 1.10.0/Ruby/'
       Rails.logger.info "os_RB_DIR:#{os_RB_DIR}"
+      Rails.logger.info "making root_path:#{root_path}"
+      FileUtils.mkdir_p "#{root_path}" unless Dir.exist? "#{root_path}"
+      Rails.logger.info "making analysis_dir:#{root_path}/analysis_#{@analysis_id}"
+      FileUtils.mkdir_p "#{root_path}/analysis_#{@analysis_id}" unless Dir.exist? "#{root_path}/analysis_#{@analysis_id}"
       string_to_exec = "cd #{root_path} && '#{RUBY_BIN_DIR}/bundle' exec ruby -I #{os_RB_DIR} #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}"
       Rails.logger.info "Attempting to exec string: \n #{string_to_exec}"
       `cd #{root_path} && "#{RUBY_BIN_DIR}/bundle" exec ruby -I "#{os_RB_DIR}" #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}`
