@@ -33,6 +33,7 @@ class Analysis::LocalRunner
     #TODO Hook up the ComputeNode root_path field to an initializer
     #root_path = ComputeNode.where(node_type: 'server').first.root_path
     root_path = "C:/Projects/PAT20/analysis"
+    server_path = "C:/Projects/PAT20/server"
     worker_nodes_path = "C:/Projects/PAT20/worker-nodes"
     Rails.logger.info("Master ip: #{master_ip}")
     Rails.logger.info('Starting Local Runner')
@@ -84,24 +85,28 @@ class Analysis::LocalRunner
 
       # Before kicking off the Analysis, make sure to setup the downloading of the files child process
       #process = Analysis::Core::BackgroundTasks.start_child_processes
-      #TODO make require 'openstudio' work
-      #string_to_exec = "cd #{root_path} && bundle exec 'C:\Program Files\OpenStudio 1.10.0\ruby-install\ruby\bin\ruby' #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}"
-      #`#{string_to_exec}`
+      
       Rails.logger.info "RUBY_BIN_DIR:#{RUBY_BIN_DIR}"
       os_RB_DIR = 'C:/Program Files/OpenStudio 1.10.0/Ruby/'
       Rails.logger.info "os_RB_DIR:#{os_RB_DIR}"
-      Rails.logger.info "making root_path:#{root_path}"
+      Rails.logger.info "setting root_path:#{root_path}"
       FileUtils.mkdir_p "#{root_path}" unless Dir.exist? "#{root_path}"
       Rails.logger.info "making analysis_dir:#{root_path}/analysis_#{@analysis_id}"
       FileUtils.mkdir_p "#{root_path}/analysis_#{@analysis_id}" unless Dir.exist? "#{root_path}/analysis_#{@analysis_id}"
-      #temporarily copy Gemfile and bundle to get workflow gem to load
-      #worker_nodes_gemfile = "#{worker_nodes_path}/Gemfile"
-      #Rails.logger.info "Copying #{worker_nodes_gemfile} to #{root_path}/analysis_#{@analysis_id}"
-      #FileUtils.cp(worker_nodes_gemfile, "#{root_path}/analysis_#{@analysis_id}/Gemfile")
-      #worker_nodes_gemfile = "#{worker_nodes_path}/Gemfile.lock"
-      #Rails.logger.info "Copying #{worker_nodes_gemfile} to #{root_path}/analysis_#{@analysis_id}"
-      #FileUtils.cp(worker_nodes_gemfile, "#{root_path}/analysis_#{@analysis_id}/Gemfile.lock")
-      #`cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" install`
+
+      #copy over rails-models and mongoid.yml
+      if Dir.exist? "#{worker_nodes_path}/rails-models/models"
+        Rails.logger.info "deleting #{worker_nodes_path}/rails-models/models"
+        FileUtils.remove_dir("#{worker_nodes_path}/rails-models/models")
+      end  
+      Rails.logger.info "copying #{server_path}/app/models/ to #{worker_nodes_path}/rails-models/models"
+      FileUtils.cp_r("#{server_path}/app/models/", "#{worker_nodes_path}/rails-models/models")
+      Rails.logger.info "copying #{server_path}/config/initializers/inflections.rb to #{worker_nodes_path}/rails-models/models"
+      FileUtils.cp_r("#{server_path}/config/initializers/inflections.rb", "#{worker_nodes_path}/rails-models/models")
+      #  zip -j #{worker_nodes_path}/rails-models/rails-models.zip ../server/app/models/*
+      #  zip -j #{worker_nodes_path}/rails-models/rails-models.zip ../server/config/initializers/inflections.rb
+      Rails.logger.info "copying #{worker_nodes_path}/rails-models/mongoid-local-runner.yml to #{worker_nodes_path}/rails-models/mongoid.yml"
+      FileUtils.cp_r("#{worker_nodes_path}/rails-models/mongoid-local-runner.yml","#{worker_nodes_path}/rails-models/mongoid.yml")
       
       string_to_exec = "cd #{root_path}/analysis_#{@analysis_id}"
       `#{string_to_exec}`
@@ -119,7 +124,7 @@ class Analysis::LocalRunner
       #`cd #{root_path} && "#{RUBY_BIN_DIR}/bundle" exec ruby #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}`
 
       @options[:data_points].each do |dp|
-        string_to_exec =  "cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec ruby -I \"#{os_RB_DIR}\" #{worker_nodes_path}/local_simulate_data_point.rb -a #{@analysis.id} -u #{dp} -x #{@options[:run_data_point_filename]} -r #{root_path}"
+        string_to_exec =  "cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec ruby -I \"#{os_RB_DIR}\" #{worker_nodes_path}/local_simulate_data_point.rb -a #{@analysis.id} -u #{dp} -x #{@options[:run_data_point_filename]} -r #{root_path} -w #{worker_nodes_path}"
         Rails.logger.info "Attempting to exec string: \n #{string_to_exec}"
         output = `#{string_to_exec}`
         Rails.logger.info "LocalSimulateDatapoint: #{output}" 

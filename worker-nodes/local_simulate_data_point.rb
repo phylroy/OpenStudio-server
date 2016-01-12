@@ -36,6 +36,10 @@ optparse = OptionParser.new do |opts|
   opts.on('-r' '--root_path path', String, 'Root path for analysis run') do |root_path|
     options[:root_path] = root_path
   end
+  
+  opts.on('-w' '--worker_nodes_path path', String, 'Worker_nodes path for analysis run') do |worker_nodes_path|
+    options[:worker_nodes_path] = worker_nodes_path
+  end
 end
 optparse.parse!
 
@@ -71,6 +75,7 @@ begin
   logger = Logger.new("#{directory}/#{options[:uuid]}.log")
 
   logger.info "Analysis Root Directory is #{analysis_dir}"
+  logger.info "Worker-Node Directory is #{options[:worker_nodes_path]}"
   logger.info "Simulation Run Directory is #{directory}"
   logger.info "Run datapoint type/file is #{options[:run_workflow_method]}"
 
@@ -82,7 +87,7 @@ begin
     datapoint_id: options[:uuid],
     analysis_root_path: analysis_dir,
     adapter_options: {
-      mongoid_path: "#{options[:root_path]}/rails-models"
+      mongoid_path: "#{options[:worker_nodes_path]}/rails-models"
     }
   }
   if options[:run_workflow_method] == 'custom_xml' ||
@@ -102,7 +107,7 @@ begin
       datapoint_id: options[:uuid],
       xml_library_file: "#{analysis_dir}/lib/openstudio_xml/main.rb",
       adapter_options: {
-          mongoid_path: "#{options[:root_path]}/rails-models"
+          mongoid_path: "#{options[:worker_nodes_path]}/rails-models"
       }
     }
   elsif options[:run_workflow_method] == 'pat_workflow' ||
@@ -112,7 +117,7 @@ begin
       datapoint_id: options[:uuid],
       analysis_root_path: analysis_dir,
       adapter_options: {
-          mongoid_path: "#{options[:root_path]}/rails-models"
+          mongoid_path: "#{options[:worker_nodes_path]}/rails-models"
       }
     }
   end
