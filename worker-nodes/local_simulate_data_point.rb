@@ -48,9 +48,11 @@ unless options[:uuid]
   exit
 end
 
-unless options[:root_path]
-  puts "Assuming analysis_dir to be '\mnt\openstudio'"
-  options[:root_path] = '\mnt\openstudio'
+if options[:root_path]
+  analysis_root = options[:root_path]
+else
+  puts "Assuming analysis_root to be '\mnt\openstudio'"
+  analysis_root = '\mnt\openstudio'
 end
 
 # Set the result of the project for R to know that this finished
@@ -70,7 +72,6 @@ begin
 
   logger.info "Analysis Root Directory is #{analysis_dir}"
   logger.info "Simulation Run Directory is #{directory}"
-  logger.info "Simulation Storage Directory is #{store_directory}"
   logger.info "Run datapoint type/file is #{options[:run_workflow_method]}"
 
   # TODO: program the various paths based on the run_type

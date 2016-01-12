@@ -81,3 +81,5 @@ end
 
 # Deploy with Capistrano
 gem 'capistrano'
+
+gem 'openstudio-workflow', github: 'NREL/OpenStudio-workflow-gem', branch: 'develop', ref: '5029467'

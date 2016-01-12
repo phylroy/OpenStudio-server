@@ -1,6 +1,20 @@
+GIT
+  remote: git://github.com/NREL/OpenStudio-workflow-gem.git
+  revision: 5029467a85128f24e0ad9c3cfa7134bca5296f12
+  ref: 5029467
+  branch: develop
+  specs:
+    openstudio-workflow (0.2.0)
+      colored (~> 1.2)
+      facter (>= 2.0)
+      multi_json (~> 1.10.0)
+      rubyXL (~> 3.3.0)
+      rubyzip (~> 1.1.7)
+
 GEM
   remote: http://rubygems.org/
   specs:
+    CFPropertyList (2.2.8)
     actionmailer (3.2.22)
       actionpack (= 3.2.22)
       mail (~> 2.5.4)
@@ -30,7 +44,7 @@ GEM
       multi_json (~> 1.0)
     archive-tar-minitar (0.5.2)
     arel (3.0.3)
-    aws-sdk-core (2.1.35)
+    aws-sdk-core (2.2.9)
       jmespath (~> 1.0)
     bcl (0.5.6)
       archive-tar-minitar
@@ -56,13 +70,13 @@ GEM
       i18n
       rake (>= 10.0.0)
       sshkit (~> 1.3)
-    childprocess (0.5.7)
+    childprocess (0.5.9)
       ffi (~> 1.0, >= 1.0.11)
     ci_reporter (1.9.3)
       builder (>= 2.1.2)
     climate_control (0.0.3)
       activesupport (>= 3.0)
-    cocaine (0.5.7)
+    cocaine (0.5.8)
       climate_control (>= 0.0.3, < 1.0)
     coderay (1.1.0)
     coffee-rails (3.2.2)
@@ -71,8 +85,8 @@ GEM
     coffee-script (2.4.1)
       coffee-script-source
       execjs
-    coffee-script-source (1.9.1.1)
-    colorize (0.7.7)
+    coffee-script-source (1.10.0)
+    colored (1.2)
     daemons (1.2.3)
     delayed_job (4.1.1)
       activesupport (>= 3.0, < 5.0)
@@ -83,6 +97,17 @@ GEM
     diff-lcs (1.2.5)
     erubis (2.7.0)
     execjs (2.6.0)
+    facter (2.4.4)
+      CFPropertyList (~> 2.2.6)
+    facter (2.4.4-x64-mingw32)
+      ffi (~> 1.9.5)
+      win32-dir (~> 0.4.8)
+      win32-security (~> 0.2.5)
+    facter (2.4.4-x86-mingw32)
+      ffi (~> 1.9.5)
+      win32-dir (~> 0.4.8)
+      win32-security (~> 0.2.5)
+      win32console (~> 1.3.2)
     factory_girl (4.5.0)
       activesupport (>= 3.0.0)
     factory_girl_rails (4.5.0)
@@ -90,12 +115,13 @@ GEM
       railties (>= 3.0.0)
     faraday (0.9.2)
       multipart-post (>= 1.2, < 3)
-    ffi (1.9.10)
+    ffi (1.9.10-x64-mingw32)
+    ffi (1.9.10-x86-mingw32)
     git-version-bump (0.15.1)
     hike (1.2.3)
     i18n (0.7.0)
-    jbuilder (2.3.2)
-      activesupport (>= 3.0.0, < 5)
+    jbuilder (2.4.0)
+      activesupport (>= 3.0.0, < 5.1)
       multi_json (~> 1.2)
     jmespath (1.1.3)
     journey (1.0.4)
@@ -117,7 +143,7 @@ GEM
       rack-contrib (~> 1.1)
       railties (>= 3.0.0, < 5.0.0)
     mime-types (1.25.1)
-    mini_portile (0.6.2)
+    mini_portile2 (2.0.0)
     mongoid (3.1.7)
       activemodel (~> 3.2)
       moped (~> 1.4)
@@ -133,16 +159,20 @@ GEM
       rake
       rspec (>= 2.14)
     moped (1.5.3)
-    multi_json (1.11.2)
+    multi_json (1.10.1)
     multipart-post (2.0.0)
     net-http-persistent (2.9.4)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
     net-sftp (2.1.2)
       net-ssh (>= 2.6.5)
-    net-ssh (3.0.1)
-    nokogiri (1.6.6.2)
-      mini_portile (~> 0.6.0)
+    net-ssh (3.0.2)
+    nokogiri (1.6.7.1)
+      mini_portile2 (~> 2.0.0.rc2)
+    nokogiri (1.6.7.1-x64-mingw32)
+      mini_portile2 (~> 2.0.0.rc2)
+    nokogiri (1.6.7.1-x86-mingw32)
+      mini_portile2 (~> 2.0.0.rc2)
     openstudio-analysis (0.4.4)
       bcl (~> 0.5.5)
       faraday (~> 0.8)
@@ -220,8 +250,8 @@ GEM
       rspec-core (~> 2.99.0)
       rspec-expectations (~> 2.99.0)
       rspec-mocks (~> 2.99.0)
-    ruby-ole (1.2.11.8)
-    ruby-prof (0.15.8)
+    ruby-ole (1.2.12)
+    ruby-prof (0.15.9)
     rubyXL (3.3.15)
       nokogiri (>= 1.4.4)
       rubyzip (>= 1.1.6)
@@ -234,19 +264,18 @@ GEM
     semantic (1.4.1)
     sextant (0.2.4)
       rails (>= 3.2)
-    spreadsheet (1.0.8)
+    spreadsheet (1.1.1)
       ruby-ole (>= 1.0)
     sprockets (2.2.3)
       hike (~> 1.2)
       multi_json (~> 1.0)
       rack (~> 1.0)
       tilt (~> 1.1, != 1.3.0)
-    sshkey (1.7.0)
-    sshkit (1.7.1)
-      colorize (>= 0.7.0)
+    sshkey (1.8.0)
+    sshkit (1.8.1)
       net-scp (>= 1.1.2)
       net-ssh (>= 2.8.0)
-    sys-filesystem (1.1.4)
+    sys-filesystem (1.1.5)
       ffi
     systemu (2.6.5)
     therubyracer (0.12.2)
@@ -257,17 +286,24 @@ GEM
     treetop (1.4.15)
       polyglot
       polyglot (>= 0.3.1)
-    tzinfo (0.3.45)
+    tzinfo (0.3.46)
     uglifier (2.7.2)
       execjs (>= 0.3.0)
       json (>= 1.8.0)
     uuid (2.3.8)
       macaddr (~> 1.0)
+    win32-dir (0.4.9)
+      ffi (>= 1.0.0)
+    win32-security (0.2.5)
+      ffi
+    win32console (1.3.2-x86-mingw32)
     yamler (0.1.0)
     zliby (0.0.5)
 
 PLATFORMS
   ruby
+  x64-mingw32
+  x86-mingw32
 
 DEPENDENCIES
   better_errors
@@ -296,6 +332,7 @@ DEPENDENCIES
   net-ssh
   openstudio-analysis
   openstudio-aws
+  openstudio-workflow!
   paperclip (~> 4.1.1)
   parallel
   rails (= 3.2.22)
@@ -304,6 +341,7 @@ DEPENDENCIES
   rspec-html-matchers
   rspec-rails (~> 2.0)
   ruby-prof
+  rubyzip
   sass (= 3.2.10)
   sass-rails (~> 3.2.3)
   sextant
@@ -312,4 +350,4 @@ DEPENDENCIES
   uglifier (>= 1.0.3)
 
 BUNDLED WITH
-   1.10.6
+   1.11.2

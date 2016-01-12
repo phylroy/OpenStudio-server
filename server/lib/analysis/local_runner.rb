@@ -94,17 +94,35 @@ class Analysis::LocalRunner
       FileUtils.mkdir_p "#{root_path}" unless Dir.exist? "#{root_path}"
       Rails.logger.info "making analysis_dir:#{root_path}/analysis_#{@analysis_id}"
       FileUtils.mkdir_p "#{root_path}/analysis_#{@analysis_id}" unless Dir.exist? "#{root_path}/analysis_#{@analysis_id}"
-      string_to_exec = "cd #{root_path} && \"#{RUBY_BIN_DIR}/bundle\" exec ruby -I \"#{os_RB_DIR}\" #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}"
-      Rails.logger.info "Attempting to exec string: \n #{string_to_exec}"
+      #temporarily copy Gemfile and bundle to get workflow gem to load
+      #worker_nodes_gemfile = "#{worker_nodes_path}/Gemfile"
+      #Rails.logger.info "Copying #{worker_nodes_gemfile} to #{root_path}/analysis_#{@analysis_id}"
+      #FileUtils.cp(worker_nodes_gemfile, "#{root_path}/analysis_#{@analysis_id}/Gemfile")
+      #worker_nodes_gemfile = "#{worker_nodes_path}/Gemfile.lock"
+      #Rails.logger.info "Copying #{worker_nodes_gemfile} to #{root_path}/analysis_#{@analysis_id}"
+      #FileUtils.cp(worker_nodes_gemfile, "#{root_path}/analysis_#{@analysis_id}/Gemfile.lock")
+      #`cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" install`
+      
+      string_to_exec = "cd #{root_path}/analysis_#{@analysis_id}"
       `#{string_to_exec}`
+      string_to_exec = "\"#{RUBY_BIN_DIR}/bundle\" show"
+      output = `#{string_to_exec}`
+      Rails.logger.info "bundle show: #{output}" 
+      #Try without bundle
+      #string_to_exec = "cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/ruby\" -I \"#{os_RB_DIR}\" #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}"
+      string_to_exec = "cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec ruby -I \"#{os_RB_DIR}\" #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}"
+      Rails.logger.info "Attempting to exec string: \n #{string_to_exec}"
+      output = `#{string_to_exec}`
+      Rails.logger.info "LocalWorkerInit: #{output}" 
       #`cd #{root_path} && "#{RUBY_BIN_DIR}/bundle" exec ruby -I "#{os_RB_DIR}" #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}`
       #TODO trying below with OS ruby
       #`cd #{root_path} && "#{RUBY_BIN_DIR}/bundle" exec ruby #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}`
 
       @options[:data_points].each do |dp|
-        string_to_exec =  "cd #{root_path} && '#{RUBY_BIN_DIR}/bundle' exec ruby -I #{os_RB_DIR} #{worker_nodes_path}/local_simulate_data_point.rb -a #{@analysis.id} -u #{dp} -x #{@options[:run_data_point_filename]}"
+        string_to_exec =  "cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec ruby -I \"#{os_RB_DIR}\" #{worker_nodes_path}/local_simulate_data_point.rb -a #{@analysis.id} -u #{dp} -x #{@options[:run_data_point_filename]} -r #{root_path}"
         Rails.logger.info "Attempting to exec string: \n #{string_to_exec}"
-        `cd #{root_path} && "#{RUBY_BIN_DIR}/bundle" exec ruby -I "#{os_RB_DIR}" #{worker_nodes_path}/local_simulate_data_point.rb -a #{@analysis.id} -u #{dp} -x #{@options[:run_data_point_filename]}`
+        output = `#{string_to_exec}`
+        Rails.logger.info "LocalSimulateDatapoint: #{output}" 
         Rails.logger.info "Ran datapoint #{dp}"
       end
 
