@@ -112,18 +112,23 @@ class Analysis::LocalRunner
       string_to_exec = "\"#{RUBY_BIN_DIR}/bundle\" show"
       output = `#{string_to_exec}`
       Rails.logger.info "bundle show: #{output}" 
-      #Try without bundle
-      #string_to_exec = "cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/ruby\" -I \"#{os_RB_DIR}\" #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}"
-      string_to_exec = "cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec ruby -I \"#{os_RB_DIR}\" #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}"
+      output = `ruby -v`
+      Rails.logger.info "Ruby -v: #{output}" 
+      output = `cd \"#{RUBY_BIN_DIR}\" && ruby -v`
+      Rails.logger.info "#{RUBY_BIN_DIR}/Ruby -v: #{output}"
+      #below works, but its frankstein ruby
+      #string_to_exec = "cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec ruby -I \"#{os_RB_DIR}\" #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}"
+      #below works and is all OS ruby
+      string_to_exec = "cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec \"#{RUBY_BIN_DIR}/ruby\" #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}"
       Rails.logger.info "Attempting to exec string: \n #{string_to_exec}"
       output = `#{string_to_exec}`
       Rails.logger.info "LocalWorkerInit: #{output}" 
-      #`cd #{root_path} && "#{RUBY_BIN_DIR}/bundle" exec ruby -I "#{os_RB_DIR}" #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}`
-      #TODO trying below with OS ruby
-      #`cd #{root_path} && "#{RUBY_BIN_DIR}/bundle" exec ruby #{worker_nodes_path}/local_init_final.rb -r #{root_path} -s initialize -a #{@analysis.id}`
 
       @options[:data_points].each do |dp|
-        string_to_exec =  "cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec ruby -I \"#{os_RB_DIR}\" #{worker_nodes_path}/local_simulate_data_point.rb -a #{@analysis.id} -u #{dp} -x #{@options[:run_data_point_filename]} -r #{root_path} -w #{worker_nodes_path}"
+        #below works, but its frankstein ruby
+        #string_to_exec =  "cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec ruby -I \"#{os_RB_DIR}\" #{worker_nodes_path}/local_simulate_data_point.rb -a #{@analysis.id} -u #{dp} -x #{@options[:run_data_point_filename]} -r #{root_path} -w #{worker_nodes_path}"
+        string_to_exec =  "cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec \"#{RUBY_BIN_DIR}/ruby\" #{worker_nodes_path}/local_simulate_data_point.rb -a #{@analysis.id} -u #{dp} -x #{@options[:run_data_point_filename]} -r #{root_path} -w #{worker_nodes_path}"
+        #below works and is all OS ruby
         Rails.logger.info "Attempting to exec string: \n #{string_to_exec}"
         output = `#{string_to_exec}`
         Rails.logger.info "LocalSimulateDatapoint: #{output}" 
