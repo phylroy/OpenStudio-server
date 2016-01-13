@@ -83,11 +83,11 @@ class Analysis::LocalRunner
       Rails.logger.info "Rails.root:#{Rails.root}"
       Rails.logger.info "Rails.env=#{Rails.env}"
       # Before kicking off the Analysis, make sure to setup the downloading of the files child process
-      #process = Analysis::Core::BackgroundTasks.start_child_processes
+      process = Analysis::Core::BackgroundTasks.start_child_processes
       
       Rails.logger.info "RUBY_BIN_DIR:#{RUBY_BIN_DIR}"
-      os_RB_DIR = 'C:/Program Files/OpenStudio 1.10.0/Ruby/'
-      Rails.logger.info "os_RB_DIR:#{os_RB_DIR}"
+      #os_RB_DIR = 'C:/Program Files/OpenStudio 1.10.0/Ruby/'
+      #Rails.logger.info "os_RB_DIR:#{os_RB_DIR}"
       Rails.logger.info "setting root_path:#{root_path}"
       FileUtils.mkdir_p "#{root_path}" unless Dir.exist? "#{root_path}"
       Rails.logger.info "making analysis_dir:#{root_path}/analysis_#{@analysis_id}"
@@ -102,8 +102,6 @@ class Analysis::LocalRunner
       FileUtils.cp_r("#{server_path}/app/models/", "#{worker_nodes_path}/rails-models/models")
       Rails.logger.info "copying #{server_path}/config/initializers/inflections.rb to #{worker_nodes_path}/rails-models/models"
       FileUtils.cp_r("#{server_path}/config/initializers/inflections.rb", "#{worker_nodes_path}/rails-models/models")
-      #  zip -j #{worker_nodes_path}/rails-models/rails-models.zip ../server/app/models/*
-      #  zip -j #{worker_nodes_path}/rails-models/rails-models.zip ../server/config/initializers/inflections.rb
       Rails.logger.info "copying #{worker_nodes_path}/rails-models/mongoid-local-runner.yml to #{worker_nodes_path}/rails-models/mongoid.yml"
       FileUtils.cp_r("#{worker_nodes_path}/rails-models/mongoid-local-runner.yml","#{worker_nodes_path}/rails-models/mongoid.yml")
       
