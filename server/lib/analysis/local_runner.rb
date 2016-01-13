@@ -25,9 +25,6 @@ class Analysis::LocalRunner
     # reload the object (which is required) because the subdocuments (jobs) may have changed
     @analysis.reload
 
-    # At this point we should really setup the JSON that can be sent to the worker nodes with everything it needs
-    # This would allow us to easily replace the queuing system with rabbit or any other json based versions.
-
     # get the master ip address
     master_ip = ComputeNode.where(node_type: 'server').first.ip_address
     #TODO Hook up the ComputeNode root_path field to an initializer
@@ -83,6 +80,8 @@ class Analysis::LocalRunner
     process = nil
     begin
 
+      Rails.logger.info "Rails.root:#{Rails.root}"
+      Rails.logger.info "Rails.env=#{Rails.env}"
       # Before kicking off the Analysis, make sure to setup the downloading of the files child process
       #process = Analysis::Core::BackgroundTasks.start_child_processes
       

@@ -1,5 +1,5 @@
 PATH
-  remote: ../../openstudio-workflow-gem
+  remote: ../../openstudio-workflow-gem-windows
   specs:
     openstudio-workflow (0.2.0)
       colored (~> 1.2)

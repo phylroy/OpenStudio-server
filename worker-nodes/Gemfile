@@ -2,7 +2,7 @@ source 'http://rubygems.org'
 
 # OpenStudio gem from github
 #gem 'openstudio-workflow', github: 'NREL/OpenStudio-workflow-gem', branch: 'develop', ref: '5029467'
-gem 'openstudio-workflow', :path => "../../openstudio-workflow-gem"
+gem 'openstudio-workflow', :path => "../../openstudio-workflow-gem-windows"
 
 gem 'openstudio-standards', github: 'NREL/openstudio-standards', require: false
 

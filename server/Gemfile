@@ -82,5 +82,5 @@ end
 # Deploy with Capistrano
 gem 'capistrano'
 
-gem 'openstudio-workflow', :path => "../../openstudio-workflow-gem", require: false
+gem 'openstudio-workflow', :path => "../../openstudio-workflow-gem-windows", require: false
 #gem 'openstudio-workflow', github: 'NREL/OpenStudio-workflow-gem', branch: 'develop', ref: '5029467', require: false
