@@ -1,8 +1,5 @@
-GIT
-  remote: git://github.com/NREL/OpenStudio-workflow-gem.git
-  revision: 5029467a85128f24e0ad9c3cfa7134bca5296f12
-  ref: 5029467
-  branch: develop
+PATH
+  remote: ../../openstudio-workflow-gem
   specs:
     openstudio-workflow (0.2.0)
       colored (~> 1.2)
@@ -14,7 +11,6 @@ GIT
 GEM
   remote: http://rubygems.org/
   specs:
-    CFPropertyList (2.2.8)
     actionmailer (3.2.22)
       actionpack (= 3.2.22)
       mail (~> 2.5.4)
@@ -97,17 +93,10 @@ GEM
     diff-lcs (1.2.5)
     erubis (2.7.0)
     execjs (2.6.0)
-    facter (2.4.4)
-      CFPropertyList (~> 2.2.6)
     facter (2.4.4-x64-mingw32)
       ffi (~> 1.9.5)
       win32-dir (~> 0.4.8)
       win32-security (~> 0.2.5)
-    facter (2.4.4-x86-mingw32)
-      ffi (~> 1.9.5)
-      win32-dir (~> 0.4.8)
-      win32-security (~> 0.2.5)
-      win32console (~> 1.3.2)
     factory_girl (4.5.0)
       activesupport (>= 3.0.0)
     factory_girl_rails (4.5.0)
@@ -296,7 +285,6 @@ GEM
       ffi (>= 1.0.0)
     win32-security (0.2.5)
       ffi
-    win32console (1.3.2-x86-mingw32)
     yamler (0.1.0)
     zliby (0.0.5)
 
