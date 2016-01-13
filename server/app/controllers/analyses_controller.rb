@@ -7,7 +7,9 @@ class AnalysesController < ApplicationController
 
   def set_algorithm_results_path
     @analysis = Analysis.find(params[:id])
-    @algorithm_results_path = "/mnt/openstudio/analysis_#{@analysis.id}/downloads/"
+    #@algorithm_results_path = "/mnt/openstudio/analysis_#{@analysis.id}/downloads/"
+    @algorithm_results_path = "C:/Projects/PAT20/analysis/analysis_#{@analysis.id}/downloads/"
+    
   end
 
   # GET /analyses
