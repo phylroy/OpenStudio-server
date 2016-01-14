@@ -16,23 +16,7 @@ end
 require 'optparse'
 require 'fileutils'
 require 'logger'
-require 'zip'
-
-  def unzip_archive(archive_filename, destination, overwrite = true)
-      Zip::File.open(archive_filename) do |zf|
-        zf.each do |f|
-          f_path = File.join(destination, f.name)
-          FileUtils.mkdir_p(File.dirname(f_path))
-
-          if File.exist?(f_path) && overwrite
-            FileUtils.rm_rf(f_path)
-            zf.extract(f, f_path)
-          elsif !File.exist? f_path
-            zf.extract(f, f_path)
-          end
-        end
-      end
-  end
+#require 'zip'
 
 puts "Parsing Input: #{ARGV}"
 
@@ -87,7 +71,8 @@ begin
   download_file = "#{analysis_dir}/analysis.zip"
   analysis_file = 'C:/Projects/PAT20/zip/local.zip'
   download_url = "http://127.0.0.1:3000/analyses/#{options[:analysis_id]}/download_analysis_zip"
-
+  logger.info "download_url #{download_url}"
+  
   #TODO get faraday & rubyzip working here
   if ((!File.exist? download_file) && (File.exist? analysis_file))
     logger.info "Copying project zip from #{analysis_file} to #{download_file}"
@@ -96,7 +81,7 @@ begin
   end
   
   #how to unzip with workflow
-  unzip_archive("#{analysis_dir}/analysis.zip", "#{analysis_dir}")
+  OpenStudio::Workflow.extract_archive("#{analysis_dir}/analysis.zip", "#{analysis_dir}")
 
   # Find any custom worker files -- should we just call these via system ruby? Then we could have any gem that is installed (not bundled)
   files = Dir["#{analysis_dir}/lib/worker_#{options[:state]}/*.rb"].map { |n| File.basename(n) }.sort
