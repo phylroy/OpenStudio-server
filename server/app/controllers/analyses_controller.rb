@@ -705,6 +705,8 @@ class AnalysesController < ApplicationController
 
         # Read the binary data from the file
         zip_data = File.read(temp_file.path)
+        #Below is incase the above doesnt work on windows
+        #zip_data = File.open(temp_file.path,'rb'){|io| io.read}
 
         # Send the data to the browser as an attachment
         send_data(zip_data, type: 'application/zip', filename: zipfile_name, disposition: 'attachment')

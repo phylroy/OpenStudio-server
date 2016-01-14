@@ -83,7 +83,7 @@ begin
   logger.info "analysis_dir: #{analysis_dir}"
   logger.info "Running #{__FILE__}"
 
-  # Download the zip file from the server
+  # Download the Project zip file from the server
   download_file = "#{analysis_dir}/analysis.zip"
   analysis_file = 'C:/Projects/PAT20/zip/local.zip'
   download_url = "http://127.0.0.1:3000/analyses/#{options[:analysis_id]}/download_analysis_zip"

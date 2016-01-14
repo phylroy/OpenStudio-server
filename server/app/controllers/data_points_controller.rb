@@ -196,8 +196,10 @@ class DataPointsController < ApplicationController
 
   def download
     @data_point = DataPoint.find(params[:id])
-
-    data_point_zip_data = File.read(@data_point.openstudio_datapoint_file_name)
+   
+    #data_point_zip_data = File.read(@data_point.openstudio_datapoint_file_name)
+    #need below on windows, above does not work
+    data_point_zip_data = File.open(@data_point.openstudio_datapoint_file_name,'rb'){|io| io.read}
     send_data data_point_zip_data, filename: File.basename(@data_point.openstudio_datapoint_file_name), type: 'application/zip; header=present', disposition: 'attachment'
 
   end
@@ -206,7 +208,9 @@ class DataPointsController < ApplicationController
     @data_point = DataPoint.find(params[:id])
 
     remote_filename_reports = @data_point.openstudio_datapoint_file_name.gsub('.zip', '_reports.zip')
-    data_point_zip_data = File.read(remote_filename_reports)
+    #data_point_zip_data = File.read(remote_filename_reports)
+    #need below on windows, above does not work
+    data_point_zip_data = File.open(@data_point.openstudio_datapoint_file_name,'rb'){|io| io.read}
     send_data data_point_zip_data, filename: File.basename(remote_filename_reports), type: 'application/zip; header=present', disposition: 'attachment'
   end
 
