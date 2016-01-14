@@ -16,6 +16,7 @@ end
 require 'optparse'
 require 'fileutils'
 require 'logger'
+require 'faraday'
 
 puts "Parsing Input: #{ARGV}"
 
@@ -68,29 +69,26 @@ begin
 
   # Download the Project zip file from the server
   download_file = "#{analysis_dir}/analysis.zip"
-  analysis_file = 'C:/Projects/PAT20/zip/local.zip'
   download_url = "http://127.0.0.1:3000/analyses/#{options[:analysis_id]}/download_analysis_zip"
-  logger.info "download_url #{download_url}"
+  logger.info "downloading project zip from download_url #{download_url}"
   
   #TODO get faraday & rubyzip working here
-  if ((!File.exist? download_file) && (File.exist? analysis_file))
-    #logger.info "Copying project zip from #{analysis_file} to #{download_file}"
-    #FileUtils.cp(analysis_file, download_file)
-    #`curl -o #{download_file} #{download_url}`
-  #USE THIS  
-    require 'faraday'
-    conn = Faraday.new(url: 'http://127.0.0.1:3000') do |faraday|
+  if (!File.exist? download_file)
+      conn = Faraday.new(url: 'http://127.0.0.1:3000') do |faraday|
       faraday.request :url_encoded # form-encode POST params
       faraday.response :logger
       faraday.adapter Faraday.default_adapter # make requests with Net::HTTP
     end
     response = conn.get "analyses/#{options[:analysis_id]}/download_analysis_zip"
     File.open("#{download_file}", 'wb') { |fp| fp.write(response.body) }
-   end
+  end
   
-  #how to unzip with workflow
-  OpenStudio::Workflow.extract_archive("#{analysis_dir}/analysis.zip", "#{analysis_dir}")
-
+  if File.exist? "#{download_file}"
+    OpenStudio::Workflow.extract_archive("#{analysis_dir}/analysis.zip", "#{analysis_dir}")
+  else
+    logger.info "ERROR no analysis.zip file found at #{analysis_dir}/analysis.zip"
+    fail 
+  end
   # Find any custom worker files -- should we just call these via system ruby? Then we could have any gem that is installed (not bundled)
   files = Dir["#{analysis_dir}/lib/worker_#{options[:state]}/*.rb"].map { |n| File.basename(n) }.sort
   logger.info "The following custom worker #{options[:state]} files were found #{files}"
