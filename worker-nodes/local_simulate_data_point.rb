@@ -67,9 +67,10 @@ begin
   fail 'Data Point is NA... skipping' if options[:uuid] == 'NA'
   #TODO Fix paths
   analysis_dir = "#{options[:root_path]}/analysis_#{options[:analysis_id]}"
-
-  # use /run/shm on AWS (if possible)
-  directory = analysis_dir
+  store_directory = "#{options[:root_path]}/analysis_#{options[:analysis_id]}/data_point_#{options[:uuid]}"
+  FileUtils.mkdir_p(store_directory)
+  
+  directory = store_directory
 
   # Logger for the simulate datapoint
   logger = Logger.new("#{directory}/#{options[:uuid]}.log")

@@ -83,7 +83,7 @@ class Analysis::LocalRunner
       Rails.logger.info "Rails.root:#{Rails.root}"
       Rails.logger.info "Rails.env=#{Rails.env}"
       # Before kicking off the Analysis, make sure to setup the downloading of the files child process
-      process = Analysis::Core::BackgroundTasks.start_child_processes
+      #process = Analysis::Core::BackgroundTasks.start_child_processes
       
       Rails.logger.info "RUBY_BIN_DIR:#{RUBY_BIN_DIR}"
       #os_RB_DIR = 'C:/Program Files/OpenStudio 1.10.0/Ruby/'
@@ -122,15 +122,40 @@ class Analysis::LocalRunner
       output = `#{string_to_exec}`
       Rails.logger.info "LocalWorkerInit: #{output}" 
 
-      @options[:data_points].each do |dp|
+      @options[:data_points].each do |dpuuid|
         #below works, but its frankstein ruby
-        #string_to_exec =  "cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec ruby -I \"#{os_RB_DIR}\" #{worker_nodes_path}/local_simulate_data_point.rb -a #{@analysis.id} -u #{dp} -x #{@options[:run_data_point_filename]} -r #{root_path} -w #{worker_nodes_path}"
-        string_to_exec =  "cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec \"#{RUBY_BIN_DIR}/ruby\" #{worker_nodes_path}/local_simulate_data_point.rb -a #{@analysis.id} -u #{dp} -x #{@options[:run_data_point_filename]} -r #{root_path} -w #{worker_nodes_path}"
+        #string_to_exec =  "cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec ruby -I \"#{os_RB_DIR}\" #{worker_nodes_path}/local_simulate_data_point.rb -a #{@analysis.id} -u #{dpuuid} -x #{@options[:run_data_point_filename]} -r #{root_path} -w #{worker_nodes_path}"
+        string_to_exec =  "cd #{root_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec \"#{RUBY_BIN_DIR}/ruby\" #{worker_nodes_path}/local_simulate_data_point.rb -a #{@analysis.id} -u #{dpuuid} -x #{@options[:run_data_point_filename]} -r #{root_path} -w #{worker_nodes_path}"
         #below works and is all OS ruby
         Rails.logger.info "Attempting to exec string: \n #{string_to_exec}"
         output = `#{string_to_exec}`
         Rails.logger.info "LocalSimulateDatapoint: #{output}" 
-        Rails.logger.info "Ran datapoint #{dp}"
+        Rails.logger.info "Ran datapoint #{dpuuid}"
+        Rails.logger.info "Setting datapoint file name #{dpuuid}"
+        @analysis.data_points.where(uuid: dpuuid).each do |dp|
+          filepath1 = "#{root_path}/analysis_#{@analysis_id}/data_point_#{dp.id}/data_point_#{dp.id}.zip"
+          filepath2 = "#{root_path}/analysis_#{@analysis_id}/data_point_#{dp.id}.zip"
+          if ((!File.exist? filepath2) && (File.exist? filepath1))
+            Rails.logger.info "copying #{filepath1} to #{filepath2}"
+            FileUtils.cp_r(filepath1, filepath2)
+            FileUtils.rm(filepath1)
+          else
+            Rails.logger.info "NOT copying #{filepath1} to #{filepath2}"
+          end  
+          filepath1 = "#{root_path}/analysis_#{@analysis_id}/data_point_#{dp.id}/data_point_#{dp.id}_reports.zip"
+          filepath2 = "#{root_path}/analysis_#{@analysis_id}/data_point_#{dp.id}_reports.zip"
+          if ((!File.exist? filepath2) && (File.exist? filepath1))
+            Rails.logger.info "copying #{filepath1} to #{filepath2}"
+            FileUtils.cp_r(filepath1, filepath2)
+            FileUtils.rm(filepath1)
+          else
+            Rails.logger.info "NOT copying #{filepath1} to #{filepath2}"
+          end 
+          dp.openstudio_datapoint_file_name = "#{root_path}/analysis_#{@analysis_id}/data_point_#{dp.id}.zip"
+          dp.finalize_data_point
+          dp.download_status = 'completed'
+          dp.save!
+        end
       end
 
     rescue => e

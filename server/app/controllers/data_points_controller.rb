@@ -199,6 +199,7 @@ class DataPointsController < ApplicationController
 
     data_point_zip_data = File.read(@data_point.openstudio_datapoint_file_name)
     send_data data_point_zip_data, filename: File.basename(@data_point.openstudio_datapoint_file_name), type: 'application/zip; header=present', disposition: 'attachment'
+
   end
 
   def download_reports
@@ -219,7 +220,7 @@ class DataPointsController < ApplicationController
     # remove any preceding .. because an attacker could try and traverse the file system
     file = File.basename(params[:file])
     #file_str = "/mnt/openstudio/analysis_#{@data_point.analysis.id}/data_point_#{@data_point.id}/reports/#{file}"
-    file_str = "C:\Projects\PAT20\analysis/analysis_#{@data_point.analysis.id}/data_point_#{@data_point.id}/reports/#{file}"
+    file_str = "C:/Projects/PAT20/analysis/analysis_#{@data_point.analysis.id}/data_point_#{@data_point.id}/reports/#{file}"
 
     if File.exist? file_str
       render file: file_str, layout: false

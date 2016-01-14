@@ -387,7 +387,7 @@ class AnalysesController < ApplicationController
   def debug_log
     @analysis = Analysis.find(params[:id])
 
-    @rserve_log = File.read(File.join(Rails.root, 'log', 'Rserve.log'))
+    @rserve_log = File.read(File.join(Rails.root, 'log', 'development.log'))
 
     exclude_fields = [:_id, :user, :password]
     @server = ComputeNode.where(node_type: 'server').first.as_json(expect: exclude_fields)

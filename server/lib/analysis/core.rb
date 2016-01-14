@@ -162,6 +162,7 @@ module Analysis::Core
       p.io.inherit!
       # process.io.stdout = process.io.stderr = File.open(log_file,'a+')
       p.cwd = "#{Rails.root}" # set the child's working directory where the bundler will execute
+      Rails.logger.info("#{p}")
       Rails.logger.info('Starting Child Process')
       p.start
 
