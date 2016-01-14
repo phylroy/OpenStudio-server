@@ -9,7 +9,7 @@ class AnalysesController < ApplicationController
     @analysis = Analysis.find(params[:id])
     #@algorithm_results_path = "/mnt/openstudio/analysis_#{@analysis.id}/downloads/"
     @algorithm_results_path = "C:/Projects/PAT20/analysis/analysis_#{@analysis.id}/downloads/"
-    
+    @algorithm_results_path2 = "C:/Projects/PAT20/analysis/analysis_#{@analysis.id}/"
   end
 
   # GET /analyses
@@ -684,13 +684,14 @@ class AnalysesController < ApplicationController
 
     zipfile_name = "algorithm_results_#{@analysis.id}.zip"
     temp_file = Tempfile.new(zipfile_name)
+    logger.info("here")
 
     if Dir.exist?(@algorithm_results_path)
       paths = Dir.glob(@algorithm_results_path + '*')
       begin
         # Initialize the temp file as a zip file
         Zip::OutputStream.open(temp_file) { |zos| }
-
+        File.chmod(0666,temp_file)
         # Add files to the zip file as usual
         Zip::File.open(temp_file.path, Zip::File::CREATE) do |zip|
           # Put files in here

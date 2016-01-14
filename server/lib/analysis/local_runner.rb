@@ -157,7 +157,14 @@ class Analysis::LocalRunner
           dp.save!
         end
       end
-
+    
+      #create downloads dir for testing
+      Rails.logger.info "creating #{root_path}/analysis_#{@analysis_id}/downloads"
+      FileUtils.mkdir_p("#{root_path}/analysis_#{@analysis_id}/downloads") unless Dir.exist? "#{root_path}/analysis_#{@analysis_id}/downloads"
+      FileUtils.chmod(0666,"#{root_path}/analysis_#{@analysis_id}/downloads")
+      Rails.logger.info "copying test file"
+      FileUtils.cp_r("#{root_path}/analysis_#{@analysis_id}/analysis.zip", "#{root_path}/analysis_#{@analysis_id}/downloads/analysis.zip")
+      FileUtils.chmod(0666,"#{root_path}/analysis_#{@analysis_id}/downloads/analysis.zip")
     rescue => e
       log_message = "#{__FILE__} failed with #{e.message}, #{e.backtrace.join("\n")}"
       Rails.logger.error log_message
