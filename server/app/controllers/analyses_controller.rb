@@ -675,7 +675,9 @@ class AnalysesController < ApplicationController
     @analysis = Analysis.find(params[:id])
 
     unless @analysis.seed_zip.nil?
-      send_data File.open(@analysis.seed_zip.path).read, filename: 'analysis.zip', type: @analysis.seed_zip.content_type, disposition: 'attachment'
+      f = File.open(@analysis.seed_zip.path, 'rb'){|io| io.read}
+      send_data f, filename: 'analysis.zip', type: 'application/zip; header=present', disposition: 'attachment'
+      #send_data data_point_zip_data, filename: File.basename(@data_point.openstudio_datapoint_file_name), type: 'application/zip; header=present', disposition: 'attachment'
     end
   end
 

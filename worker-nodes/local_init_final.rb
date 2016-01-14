@@ -16,7 +16,6 @@ end
 require 'optparse'
 require 'fileutils'
 require 'logger'
-#require 'zip'
 
 puts "Parsing Input: #{ARGV}"
 
@@ -75,10 +74,19 @@ begin
   
   #TODO get faraday & rubyzip working here
   if ((!File.exist? download_file) && (File.exist? analysis_file))
-    logger.info "Copying project zip from #{analysis_file} to #{download_file}"
-    FileUtils.cp(analysis_file, download_file)
+    #logger.info "Copying project zip from #{analysis_file} to #{download_file}"
+    #FileUtils.cp(analysis_file, download_file)
     #`curl -o #{download_file} #{download_url}`
-  end
+  #USE THIS  
+    require 'faraday'
+    conn = Faraday.new(url: 'http://127.0.0.1:3000') do |faraday|
+      faraday.request :url_encoded # form-encode POST params
+      faraday.response :logger
+      faraday.adapter Faraday.default_adapter # make requests with Net::HTTP
+    end
+    response = conn.get "analyses/#{options[:analysis_id]}/download_analysis_zip"
+    File.open("#{download_file}", 'wb') { |fp| fp.write(response.body) }
+   end
   
   #how to unzip with workflow
   OpenStudio::Workflow.extract_archive("#{analysis_dir}/analysis.zip", "#{analysis_dir}")
