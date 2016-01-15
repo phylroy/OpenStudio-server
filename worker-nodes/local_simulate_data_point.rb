@@ -33,8 +33,8 @@ optparse = OptionParser.new do |opts|
     options[:run_workflow_method] = s
   end
 
-  opts.on('-r' '--root_path path', String, 'Root path for analysis run') do |root_path|
-    options[:root_path] = root_path
+  opts.on('-r' '--analysis_path path', String, 'Root path for analysis run') do |analysis_path|
+    options[:analysis_path] = analysis_path
   end
   
   opts.on('-w' '--worker_nodes_path path', String, 'Worker_nodes path for analysis run') do |worker_nodes_path|
@@ -52,8 +52,8 @@ unless options[:uuid]
   exit
 end
 
-if options[:root_path]
-  analysis_root = options[:root_path]
+if options[:analysis_path]
+  analysis_root = options[:analysis_path]
 else
   puts "Assuming analysis_root to be '\mnt\openstudio'"
   analysis_root = '\mnt\openstudio'
@@ -66,8 +66,8 @@ begin
   directory = nil
   fail 'Data Point is NA... skipping' if options[:uuid] == 'NA'
   #TODO Fix paths
-  analysis_dir = "#{options[:root_path]}/analysis_#{options[:analysis_id]}"
-  store_directory = "#{options[:root_path]}/analysis_#{options[:analysis_id]}/data_point_#{options[:uuid]}"
+  analysis_dir = "#{options[:analysis_path]}/analysis_#{options[:analysis_id]}"
+  store_directory = "#{options[:analysis_path]}/analysis_#{options[:analysis_id]}/data_point_#{options[:uuid]}"
   FileUtils.mkdir_p(store_directory)
   
   directory = store_directory

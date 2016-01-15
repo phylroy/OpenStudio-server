@@ -31,8 +31,8 @@ optparse = OptionParser.new do |opts|
     options[:state] = state
   end
 
-  opts.on('-r' '--root_path path', String, 'Root path for analysis run') do |root_path|
-    options[:root_path] = root_path
+  opts.on('-r' '--analysis_path path', String, 'Root path for analysis run') do |analysis_path|
+    options[:analysis_path] = analysis_path
   end
 end
 optparse.parse!
@@ -48,8 +48,8 @@ unless options[:state]
   exit
 end
 
-if options[:root_path]
-  analysis_root = options[:root_path]
+if options[:analysis_path]
+  analysis_root = options[:analysis_path]
 else
   puts "Assuming analysis_root to be '\mnt\openstudio'"
   analysis_root = '\mnt\openstudio'
