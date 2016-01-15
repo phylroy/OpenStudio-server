@@ -33,6 +33,7 @@ class Analysis::LocalRunner
     analysis_path = "C:/Projects/PAT20/analysis"
     server_path = "C:/Projects/PAT20/server"
     worker_nodes_path = "C:/Projects/PAT20/worker-nodes"
+    debug_flag = true
     Rails.logger.info("Master ip: #{master_ip}")
     Rails.logger.info('Starting Local Runner')
     Rails.logger.info("options: #{@options}")
@@ -65,7 +66,7 @@ class Analysis::LocalRunner
       Rails.logger.info("Generated data point #{dp.name} for analysis #{@analysis.name}")
     end
     
-    # Quick preflight check that R, MongoDB, and Rails are working as expected. Checks to make sure
+    # Quick preflight check that MongoDB, and Rails are working as expected. Checks to make sure
     # that the run flag is true.
     if @options[:data_points].empty?
       Rails.logger.info 'No data points were passed into the options, therefore checking which data points to run'
@@ -83,15 +84,13 @@ class Analysis::LocalRunner
 
       Rails.logger.info "Rails.root:#{Rails.root}"
       Rails.logger.info "Rails.env=#{Rails.env}"
-      # Before kicking off the Analysis, make sure to setup the downloading of the files child process
-      #process = Analysis::Core::BackgroundTasks.start_child_processes
       
       Rails.logger.info "RUBY_BIN_DIR:#{RUBY_BIN_DIR}"
-      #os_RB_DIR = 'C:/Program Files/OpenStudio 1.10.0/Ruby/'
-      #Rails.logger.info "os_RB_DIR:#{os_RB_DIR}"
       Rails.logger.info "setting analysis_path:#{analysis_path}"
+      #check if analysis directory exists, if not make it
       FileUtils.mkdir_p "#{analysis_path}" unless Dir.exist? "#{analysis_path}"
       Rails.logger.info "making analysis_dir:#{analysis_path}/analysis_#{@analysis_id}"
+      #make analysis_uuid directory
       FileUtils.mkdir_p "#{analysis_path}/analysis_#{@analysis_id}" unless Dir.exist? "#{analysis_path}/analysis_#{@analysis_id}"
 
       #copy over rails-models and mongoid.yml
@@ -106,33 +105,29 @@ class Analysis::LocalRunner
       Rails.logger.info "copying #{worker_nodes_path}/rails-models/mongoid-local-runner.yml to #{worker_nodes_path}/rails-models/mongoid.yml"
       FileUtils.cp_r("#{worker_nodes_path}/rails-models/mongoid-local-runner.yml","#{worker_nodes_path}/rails-models/mongoid.yml")
       
-      string_to_exec = "cd #{analysis_path}/analysis_#{@analysis_id}"
-      `#{string_to_exec}`
-      string_to_exec = "\"#{RUBY_BIN_DIR}/bundle\" show"
-      output = `#{string_to_exec}`
-      Rails.logger.info "bundle show: #{output}" 
-      output = `ruby -v`
-      Rails.logger.info "Ruby -v: #{output}" 
-      output = `cd \"#{RUBY_BIN_DIR}\" && ruby -v`
-      Rails.logger.info "#{RUBY_BIN_DIR}/Ruby -v: #{output}"
-      #below works, but its frankstein ruby
-      #string_to_exec = "cd #{analysis_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec ruby -I \"#{os_RB_DIR}\" #{worker_nodes_path}/local_init_final.rb -r #{analysis_path} -s initialize -a #{@analysis.id}"
-      #below works and is all OS ruby
+      if debug_flag 
+        string_to_exec = "cd #{analysis_path}/analysis_#{@analysis_id}"
+        `#{string_to_exec}`
+        string_to_exec = "\"#{RUBY_BIN_DIR}/bundle\" show"
+        output = `#{string_to_exec}`
+        Rails.logger.info "bundle show: #{output}" 
+        output = `ruby -v`
+        Rails.logger.info "Ruby -v: #{output}" 
+        output = `cd \"#{RUBY_BIN_DIR}\" && ruby -v`
+        Rails.logger.info "#{RUBY_BIN_DIR}/Ruby -v: #{output}"
+      end
       string_to_exec = "cd #{analysis_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec \"#{RUBY_BIN_DIR}/ruby\" #{worker_nodes_path}/local_init_final.rb -r #{analysis_path} -s initialize -a #{@analysis.id}"
       Rails.logger.info "Attempting to exec string: \n #{string_to_exec}"
       output = `#{string_to_exec}`
       Rails.logger.info "LocalWorkerInit: #{output}" 
 
       @options[:data_points].each do |dpuuid|
-        #below works, but its frankstein ruby
-        #string_to_exec =  "cd #{analysis_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec ruby -I \"#{os_RB_DIR}\" #{worker_nodes_path}/local_simulate_data_point.rb -a #{@analysis.id} -u #{dpuuid} -x #{@options[:run_data_point_filename]} -r #{analysis_path} -w #{worker_nodes_path}"
         string_to_exec =  "cd #{analysis_path}/analysis_#{@analysis_id} && \"#{RUBY_BIN_DIR}/bundle\" exec \"#{RUBY_BIN_DIR}/ruby\" #{worker_nodes_path}/local_simulate_data_point.rb -a #{@analysis.id} -u #{dpuuid} -x #{@options[:run_data_point_filename]} -r #{analysis_path} -w #{worker_nodes_path}"
-        #below works and is all OS ruby
         Rails.logger.info "Attempting to exec string: \n #{string_to_exec}"
         output = `#{string_to_exec}`
         Rails.logger.info "LocalSimulateDatapoint: #{output}" 
         Rails.logger.info "Ran datapoint #{dpuuid}"
-        Rails.logger.info "Setting datapoint file name #{dpuuid}"
+        Rails.logger.info "Copy datapoint files and save datapoint: #{dpuuid}"
         @analysis.data_points.where(uuid: dpuuid).each do |dp|
           filepath1 = "#{analysis_path}/analysis_#{@analysis_id}/data_point_#{dp.id}/data_point_#{dp.id}.zip"
           filepath2 = "#{analysis_path}/analysis_#{@analysis_id}/data_point_#{dp.id}.zip"
@@ -141,7 +136,7 @@ class Analysis::LocalRunner
             FileUtils.cp_r(filepath1, filepath2)
             FileUtils.rm(filepath1)
           else
-            Rails.logger.info "NOT copying #{filepath1} to #{filepath2}"
+            Rails.logger.info "NOT copying #{filepath1} to #{filepath2} already exists"
           end  
           filepath1 = "#{analysis_path}/analysis_#{@analysis_id}/data_point_#{dp.id}/data_point_#{dp.id}_reports.zip"
           filepath2 = "#{analysis_path}/analysis_#{@analysis_id}/data_point_#{dp.id}_reports.zip"
@@ -158,14 +153,15 @@ class Analysis::LocalRunner
           dp.save!
         end
       end
-    
-      #create downloads dir for testing
-      Rails.logger.info "creating #{analysis_path}/analysis_#{@analysis_id}/downloads"
-      FileUtils.mkdir_p("#{analysis_path}/analysis_#{@analysis_id}/downloads") unless Dir.exist? "#{analysis_path}/analysis_#{@analysis_id}/downloads"
-      FileUtils.chmod(0666,"#{analysis_path}/analysis_#{@analysis_id}/downloads")
-      Rails.logger.info "copying test file"
-      FileUtils.cp_r("#{analysis_path}/analysis_#{@analysis_id}/analysis.zip", "#{analysis_path}/analysis_#{@analysis_id}/downloads/analysis.zip")
-      FileUtils.chmod(0666,"#{analysis_path}/analysis_#{@analysis_id}/downloads/analysis.zip")
+      if debug_flag
+        #create downloads dir for testing
+        Rails.logger.info "creating #{analysis_path}/analysis_#{@analysis_id}/downloads"
+        FileUtils.mkdir_p("#{analysis_path}/analysis_#{@analysis_id}/downloads") unless Dir.exist? "#{analysis_path}/analysis_#{@analysis_id}/downloads"
+        FileUtils.chmod(0666,"#{analysis_path}/analysis_#{@analysis_id}/downloads")
+        Rails.logger.info "copying test file"
+        FileUtils.cp_r("#{analysis_path}/analysis_#{@analysis_id}/analysis.zip", "#{analysis_path}/analysis_#{@analysis_id}/downloads/analysis.zip")
+        FileUtils.chmod(0666,"#{analysis_path}/analysis_#{@analysis_id}/downloads/analysis.zip")
+      end
     rescue => e
       log_message = "#{__FILE__} failed with #{e.message}, #{e.backtrace.join("\n")}"
       Rails.logger.error log_message
