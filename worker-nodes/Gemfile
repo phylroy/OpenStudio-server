@@ -1,7 +1,7 @@
 source 'http://rubygems.org'
 
 # OpenStudio gem from github
-gem 'openstudio-workflow', github: 'NREL/OpenStudio-workflow-gem', branch: 'develop', ref: '5029467'
+gem 'openstudio-workflow', github: 'NREL/OpenStudio-workflow-gem', branch: 'windows-support'
 
 gem 'openstudio-standards', github: 'NREL/openstudio-standards', require: false
 
@@ -24,3 +24,4 @@ gem 'delayed_job_mongoid'
 gem 'libxml-ruby', :platforms => :ruby
 gem 'os'
 gem 'uuid' # convert this to SecureRandom internal ruby library
+gem 'faraday'

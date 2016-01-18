@@ -1,13 +1,17 @@
 
 require 'core_extensions'
 require 'zip'
+require 'tempfile'
 
 class AnalysesController < ApplicationController
-  before_filter :set_algorithm_results_path, :only => [:show, :download_algorithm_results_zip]
+  before_filter :set_algorithm_results_path, only: [:show, :download_algorithm_results_zip]
 
   def set_algorithm_results_path
     @analysis = Analysis.find(params[:id])
     @algorithm_results_path = "/mnt/openstudio/analysis_#{@analysis.id}/downloads/"
+    @algorithm_results_path2 = "/mnt/openstudio/analysis_#{@analysis.id}/"
+    #@algorithm_results_path = "C:/Projects/PAT20/analysis/analysis_#{@analysis.id}/downloads/"
+    #@algorithm_results_path2 = "C:/Projects/PAT20/analysis/analysis_#{@analysis.id}/"
   end
 
   # GET /analyses
@@ -99,7 +103,6 @@ class AnalysesController < ApplicationController
     if Dir.exist?(@algorithm_results_path) && !Dir.glob(@algorithm_results_path + '*').empty?
       @algorithm_results = true
     end
-
 
     respond_to do |format|
       format.html # show.html.erb
@@ -386,7 +389,7 @@ class AnalysesController < ApplicationController
   def debug_log
     @analysis = Analysis.find(params[:id])
 
-    @rserve_log = File.read(File.join(Rails.root, 'log', 'Rserve.log'))
+    @rserve_log = File.read(File.join(Rails.root, 'log', 'development.log'))
 
     exclude_fields = [:_id, :user, :password]
     @server = ComputeNode.where(node_type: 'server').first.as_json(expect: exclude_fields)
@@ -674,44 +677,59 @@ class AnalysesController < ApplicationController
     @analysis = Analysis.find(params[:id])
 
     unless @analysis.seed_zip.nil?
-      send_data File.open(@analysis.seed_zip.path).read, filename: 'analysis.zip', type: @analysis.seed_zip.content_type, disposition: 'attachment'
+      f = File.open(@analysis.seed_zip.path, 'rb'){|io| io.read}
+      send_data f, filename: 'analysis.zip', type: 'application/zip; header=present', disposition: 'attachment'
+      #send_data data_point_zip_data, filename: File.basename(@data_point.openstudio_datapoint_file_name), type: 'application/zip; header=present', disposition: 'attachment'
     end
   end
 
   def download_algorithm_results_zip
-     
     @analysis = Analysis.find(params[:id])
 
     zipfile_name = "algorithm_results_#{@analysis.id}.zip"
-    temp_file = Tempfile.new(zipfile_name)
 
+    dir = Dir.mktmpdir(nil,"#{Rails.root}/tmp/")
+    logger.info("Temp Dir: #{dir}")
     if Dir.exist?(@algorithm_results_path)
       paths = Dir.glob(@algorithm_results_path + '*')
+      logger.info("paths: #{paths}")
       begin
-        #Initialize the temp file as a zip file
-        Zip::OutputStream.open(temp_file) { |zos| }
-       
-        #Add files to the zip file as usual
-        Zip::File.open(temp_file.path, Zip::File::CREATE) do |zip|
-          #Put files in here
-          paths.each do |fi|
-            logger.info(fi)
-            # Two arguments:
-            # - The name of the file as it will appear in the archive
-            # - The original file, including the path to find it
-            zip.add(File.basename(fi), fi)
+        # Put files in here
+        paths.each do |fi|
+          logger.info("copying: #{fi} to #{dir}/#{File.basename(fi)}")
+          # Two arguments:
+          # - The name of the file as it will appear in the archive
+          # - The original file, including the path to find it
+          FileUtils.cp_r(fi, "#{dir}/#{File.basename(fi)}")
+        end
+        #zip up dir
+        #Zip::ZipFile.open("@algorithm_results_path/#{zipfile_name}") do |zipfile|
+        logger.info("Creating zipfile: #{@algorithm_results_path2}#{zipfile_name}")
+        logger.info("dir: #{dir}")
+        paths = Dir.glob(dir + '/*')
+        logger.info("paths: #{paths}")
+        if File.exist?("#{@algorithm_results_path2}zipfile.zip")
+          FileUtils.rm("#{@algorithm_results_path2}zipfile.zip")
+        end
+        Zip::File.open("#{@algorithm_results_path2}zipfile.zip", Zip::File::CREATE) do |zipfile|
+          paths.each do |filename|
+            logger.info("zipping up: #{filename} to #{@algorithm_results_path2}zipfile.zip")
+            zipfile.add( File.basename(filename),filename)
           end
         end
-       
-        #Read the binary data from the file
-        zip_data = File.read(temp_file.path)
-       
-        #Send the data to the browser as an attachment
-        send_data(zip_data, :type => 'application/zip', :filename => zipfile_name, disposition: 'attachment')
+        
+        # Read the binary data from the file
+        #zip_data = File.read(temp_file.path)
+        #Below is incase the above doesnt work on windows
+        logger.info("Downloading #{@algorithm_results_path2}zipfile.zip")
+        zip_data = File.open("#{@algorithm_results_path2}zipfile.zip",'rb'){|io| io.read}
+
+        # Send the data to the browser as an attachment
+        send_data(zip_data, type: 'application/zip', filename: zipfile_name, disposition: 'attachment')
+        
       ensure
-        #Close and delete the temp file
-        temp_file.close
-        temp_file.unlink
+        FileUtils.remove_entry dir
+        FileUtils.rm("#{@algorithm_results_path2}zipfile.zip")
       end
     end
   end
