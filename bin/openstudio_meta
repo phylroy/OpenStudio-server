@@ -236,6 +236,9 @@ class InstallGems
   # @return [Fixnum] Return status
   #
   def execute(sub_argv)
+    require 'json' 
+    require 'fileutils'
+    
     options = {debug: false}
 
     opts = ::OptionParser.new do |o|
@@ -260,11 +263,41 @@ class InstallGems
     # Execute the required bundler command
     ::Dir.chdir File.absolute_path(File.join(__FILE__, './../../server/'))
     bundler_bin = File.absolute_path('./../gems/bin/bundle')
-	rake_bin = File.absolute_path('./../gems/bin/rake/')
+	  rake_bin = File.absolute_path('./../gems/bin/rake/')
+    gem_install_dir = File.absolute_path('./../gems/gems/')
     sys_call = "gem install bundler -v 1.12.5 && #{bundler_bin} install --without development test" #### && #{rake_bin} assets:precompile"
     puts "Enviroment variables: #{::ENV.inspect}" if options[:debug]
     puts "System call will be: '#{sys_call}' in directory '#{Dir.pwd}'" if options[:debug]
-    exec sys_call
+    system sys_call
+
+    # get list of all gems, we have to manually install github gems
+    sys_call = "#{bundler_bin} show"
+    output = nil
+    IO.popen(sys_call) { |f| output = f.readlines }
+    puts "#{bundler_bin} show = #{output.join}" if options[:debug]
+    
+    output.each do |line|
+      if md = /  \* (.*) \(/.match(line)
+        gem = md[1]
+        installed = Dir.glob("#{gem_install_dir}/#{gem}*")
+        if installed.empty?
+          puts "installing gem #{gem} the hard way"
+          sys_call = "#{bundler_bin} show #{gem}"
+          
+          output = nil
+          IO.popen(sys_call) { |f| output = f.read.strip }
+          puts "#{bundler_bin} show #{gem} = #{output}" if options[:debug]
+          
+          if File.exists?(output)
+            puts "copying file #{output} to #{gem_install_dir}"
+            FileUtils.cp_r(output, gem_install_dir)
+          end
+          
+        end
+      end
+    end
+    
+    true
   end
 end
 
